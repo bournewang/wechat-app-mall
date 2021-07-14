@@ -110,7 +110,7 @@ Page({
     this.initBanners()
     this.categories()
     WXAPI.goods({
-      recommendStatus: 1
+      recommend: 1
     }).then(res => {
       if (res.code === 0){
         that.setData({
