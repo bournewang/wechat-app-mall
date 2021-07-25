@@ -1,6 +1,7 @@
 const app = getApp();
 const CONFIG = require('../../config.js')
 const WXAPI = require('apifm-wxapi')
+const wxpay = require('../../utils/pay.js')
 import wxbarcode from 'wxbarcode'
 
 Page({
@@ -20,7 +21,7 @@ Page({
     },
     onShow : function () {
       var that = this;
-      WXAPI.orderDetail(wx.getStorageSync('token'), that.data.orderId).then(function (res) {
+      WXAPI.orderDetail(that.data.orderId).then(function (res) {
         if (res.code != 0) {
           wx.showModal({
             title: '错误',
@@ -29,13 +30,14 @@ Page({
           })
           return;
         }
-        // 绘制核销码
-        if (res.data.orderInfo.hxNumber && res.data.orderInfo.status > 0) {
-          wxbarcode.qrcode('qrcode', res.data.orderInfo.hxNumber, 650, 650);
-        }        
+        // // 绘制核销码
+        // if (res.data.orderInfo.hxNumber && res.data.orderInfo.status > 0) {
+        //   wxbarcode.qrcode('qrcode', res.data.orderInfo.hxNumber, 650, 650);
+        // }        
         that.setData({
           orderDetail: res.data
         });
+        wxpay.wxpay('order', res.data.orderAmount, res.data.id, "/pages/order-details/index?id="+res.data.id);
       })
     },
     wuliuDetailsTap:function(e){

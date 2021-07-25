@@ -15,7 +15,7 @@
           <view class="weui-label">省份</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="provinceChange" value="{{pIndex}}" range="{{provinces}}" range-key="name">
+          <picker bindchange="provinceChange" value="{{id}}" range="{{provinces}}" range-key="name">
             <view class="weui-select weui-select_in-select-after">{{provinces[pIndex].name}}</view>
           </picker>
         </view>
@@ -25,7 +25,7 @@
           <view class="weui-label">城市</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="cityChange" value="{{cIndex}}" range="{{cities}}" range-key="name">
+          <picker bindchange="cityChange" value="{{id}}" range="{{cities}}" range-key="name">
             <view class="weui-select weui-select_in-select-after">{{cities[cIndex].name}}</view>
           </picker>
         </view>
@@ -65,7 +65,7 @@
           <view class="weui-label">姓名</view>
         </view>
         <view class="weui-cell__bd">
-          <input name="linkMan" class="weui-input" type="text" placeholder="填写收货人" value="{{addressData.linkMan}}" />
+          <input name="consignee" class="weui-input" type="text" placeholder="填写收货人" value="{{addressData.consignee}}" />
         </view>
       </view>
       <view class="weui-cell">
@@ -73,7 +73,7 @@
           <view class="weui-label">手机号码</view>
         </view>
         <view class="weui-cell__bd">
-          <input name="mobile" class="weui-input" type="number" placeholder="填写手机号码" value="{{addressData.mobile}}" />
+          <input name="telephone" class="weui-input" type="number" placeholder="填写手机号码" value="{{addressData.telephone}}" />
         </view>
       </view>
       <view wx:if="{{ shipping_address_gps == '1' }}" class="weui-cell weui-cell_select">

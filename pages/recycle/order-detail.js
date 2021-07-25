@@ -53,7 +53,7 @@ Page({
       })
     }
   },
-  callMobile() {
+  calltelephone() {
     wx.makePhoneCall({
       phoneNumber: this.data.shopInfodetail.info.linkPhone,
     })

@@ -170,7 +170,7 @@ Page({
       shopIndex: e.detail.value
     })
   },
-  callMobile() {
+  calltelephone() {
     const shop = this.data.shops[this.data.shopIndex]
     wx.makePhoneCall({
       phoneNumber: shop.linkPhone,

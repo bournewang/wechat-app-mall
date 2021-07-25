@@ -32,6 +32,7 @@ async function bindSeller() {
 // 检测登录状态，返回 true / false
 async function checkHasLogined() {
   const token = wx.getStorageSync('token')
+  return !!token
   if (!token) {
     return false
   }
@@ -65,60 +66,68 @@ async function wxaCode(){
   })
 }
 
+function afterLogin(data) {
+  console.log("==== after Login")
+  wx.setStorageSync('token', data.api_token)
+  wx.setStorageSync('uid', data.id)
+  wx.setStorageSync('userInfo', data)
+  // _this.bindSeller()
+  // if ( page ) {
+  //   page.onShow()
+  // }
+}
+async function register(session_key, page){
+  wx.getUserInfo({
+    success: function(res) {
+      console.log(res)
+      res.session_key = session_key
+      WXAPI.register_wx(res).then(function(res){
+        console.log(res)
+        if (res.success) {
+          // afterLogin(res.data)
+          var data = res.data
+          wx.setStorageSync('token', data.api_token)
+          wx.setStorageSync('uid', data.id)
+          wx.setStorageSync('userInfo', data)
+        }                  
+      })
+    },
+    fail: function(res) {
+      console.log("register fail ==== ")
+    }
+  })
+}
+
 async function login(page){
   const _this = this
+  console.log("======== call wx.login")
   wx.login({
+    fail: function() {
+      wx.showModal({
+        title: '无法登录',
+        content: res.msg,
+        showCancel: false
+      })
+      return
+    },
     success: function (res) {
-      const componentAppid = wx.getStorageSync('componentAppid')
-      if (componentAppid) {
-        WXAPI.wxappServiceLogin({
-          componentAppid,
-          appid: wx.getStorageSync('appid'),
-          code: res.code
-        }).then(function (res) {        
-          if (res.code == 10000) {
-            // 去注册
-            return;
-          }
-          if (res.code != 0) {
-            // 登录错误
-            wx.showModal({
-              title: '无法登录',
-              content: res.msg,
-              showCancel: false
-            })
-            return;
-          }
-          wx.setStorageSync('token', res.data.token)
-          wx.setStorageSync('uid', res.data.uid)
-          _this.bindSeller()
-          if ( page ) {
-            page.onShow()
-          }
-        })
-      } else {
+      console.log(res)
+      var code = res.code
         WXAPI.login_wx(res.code).then(function (res) {        
-          if (res.code == 10000) {
+          if (!res.success) {
             // 去注册
+            var session_key = res.data.session_key
+            console.log("session_key: "+res.data.session_key)
+            register(res.data.session_key, page)
             return;
           }
-          if (res.code != 0) {
-            // 登录错误
-            wx.showModal({
-              title: '无法登录',
-              content: res.msg,
-              showCancel: false
-            })
-            return;
-          }
-          wx.setStorageSync('token', res.data.token)
-          wx.setStorageSync('uid', res.data.uid)
-          _this.bindSeller()
-          if ( page ) {
-            page.onShow()
-          }
+          
+          // afterLogin(res.data)
+          var data = res.data
+          wx.setStorageSync('token', data.api_token)
+          wx.setStorageSync('uid', data.id)
+          wx.setStorageSync('userInfo', data)
         })
-      }
     }
   })
 }
@@ -131,7 +140,14 @@ async function authorize() {
   //   wx.setStorageSync('uid', resLogin.data.uid)
   //   return resLogin
   // }
+  console.log("==== authorize ")
+  const that = this
+  // if (checkHasLogined()) {
+  //   console.log("has login, return")
+  //   return
+  // }
   return new Promise((resolve, reject) => {
+    
     wx.login({
       success: function (res) {
         const code = res.code
@@ -141,42 +157,27 @@ async function authorize() {
           referrer = referrer_storge;
         }
         // 下面开始调用注册接口
-        const componentAppid = wx.getStorageSync('componentAppid')
-        if (componentAppid) {
-          WXAPI.wxappServiceAuthorize({
-            code: code,
-            referrer: referrer
-          }).then(function (res) {
-            if (res.code == 0) {
-              wx.setStorageSync('token', res.data.token)
-              wx.setStorageSync('uid', res.data.uid)
-              resolve(res)
-            } else {
-              wx.showToast({
-                title: res.msg,
-                icon: 'none'
-              })
-              reject(res.msg)
-            }
-          })
-        } else {
           WXAPI.authorize({
             code: code,
             referrer: referrer
           }).then(function (res) {
-            if (res.code == 0) {
-              wx.setStorageSync('token', res.data.token)
-              wx.setStorageSync('uid', res.data.uid)
-              resolve(res)
-            } else {
-              wx.showToast({
-                title: res.msg,
-                icon: 'none'
-              })
-              reject(res.msg)
+            console.log("==== authorize response ")
+
+            if (!res.success) {
+              // 去注册
+              var session_key = res.data.session_key
+              console.log("session_key: "+res.data.session_key)
+              register(res.data.session_key, page)
+              return;
             }
+            console.log("==== authorize response success, call afterLogin ")
+            // afterLogin(res.data, page)
+            var data = res.data
+            console.log("set storage sync token: "+data.api_token)
+            wx.setStorageSync('token', data.api_token)
+            wx.setStorageSync('uid', data.id)
+            wx.setStorageSync('userInfo', data)
           })
-        }
       },
       fail: err => {
         reject(err)

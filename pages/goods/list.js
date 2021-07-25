@@ -153,7 +153,7 @@ Page({
     })
   },
   async addShopCarDone(options) {
-    const res = await WXAPI.shippingCarInfoAddItem(wx.getStorageSync('token'), options.goodsId, options.buyNumber, options.sku)
+    const res = await WXAPI.shippingCarInfoAddItem(options.goodsId, options.buyNumber)
     if (res.code == 30002) {
       // 需要选择规格尺寸
       const skuCurGoodsRes = await WXAPI.goodsDetail(options.goodsId)

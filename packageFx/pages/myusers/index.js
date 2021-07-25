@@ -30,7 +30,6 @@ Page({
   },
   async fxMembers() {
     const res = await WXAPI.fxMembers({
-      token: wx.getStorageSync('token'),
       page: this.data.page,
       level: this.data.activeIndex == 0 ? 1 : 2
     })
@@ -47,36 +46,13 @@ Page({
       }
     }
     if (res.code == 0) {
-      const statisticsCommisionMap = res.data.statisticsCommisionMap
-      const userCashMap = res.data.userCashMap
-      res.data.result.forEach(ele => {
-        if (!ele.avatarUrls) {
-          ele.avatarUrls = '/images/face.png'
-        }
-        if (!ele.nicks) {
-          ele.nicks = '用户' + ele.uids
-        }
-        const _statisticsCommisionMap = statisticsCommisionMap[ele.uids]
-        if (_statisticsCommisionMap) {
-          ele.saleroom = _statisticsCommisionMap.saleroom
-          ele.numberOrder = _statisticsCommisionMap.numberOrder
-        }
-        if (userCashMap) {
-          const _userCashMap = userCashMap[ele.uids]
-          if (_userCashMap) {
-            ele.totleConsumed = _userCashMap.totleConsumed
-            ele.totalPayNumber = _userCashMap.totalPayNumber
-            ele.totalPayAmount = _userCashMap.totalPayAmount
-          }
-        }
-      })
       if (this.data.page == 1) {
         this.setData({
-          members: res.data.result
+          members: res.data.data
         })
       } else {
         this.setData({
-          members: this.data.members.concat(res.data.result)
+          members: this.data.members.concat(res.data.data)
         })
       }
     }

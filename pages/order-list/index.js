@@ -209,7 +209,7 @@ Page({
     WXAPI.orderList(postData).then(function(res) {
       if (res.code == 0) {
         that.setData({
-          orderList: res.data.orderList,
+          orderList: res.data,
           logisticsMap: res.data.logisticsMap,
           goodsMap: res.data.goodsMap
         });

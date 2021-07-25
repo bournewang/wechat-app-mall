@@ -17,7 +17,7 @@
     <van-cell title="性别" value="{{ gender }}" is-link />
   </picker>
   <van-field
-    model:value="{{ apiUserInfoMap.base.mobile }}"
+    model:value="{{ userInfo.base.telephone }}"
     center
     readonly
     clearable
@@ -27,7 +27,7 @@
     <van-button slot="button" type="primary" size="small" open-type="getPhoneNumber" bind:getphonenumber="getPhoneNumber">重新绑定</van-button>
   </van-field>
   <van-field
-    wx:for="{{apiUserInfoMap.ext}}" wx:for-index='k' wx:key="index"
+    wx:for="{{userInfo.ext}}" wx:for-index='k' wx:key="index"
     label="{{ k }}"
     name="{{ k}}"
     value="{{ item }}"

@@ -35,8 +35,8 @@
     <van-cell title="选择回收点" value="{{shopIndex == -1 ? '请选择':shops[shopIndex].name}}" required is-link />
   </picker>
   <van-cell wx:if="{{shopIndex != -1 && shops[shopIndex].distance}}" title="距你" value="{{shops[shopIndex].distance}}km" />
-  <van-cell wx:if="{{shopIndex != -1 && shops[shopIndex].linkMan}}" title="联系人" value="{{shops[shopIndex].linkMan}}" />
-  <van-cell wx:if="{{shopIndex != -1}}" title="电话" value="{{shops[shopIndex].linkPhone}}" is-link bind:click="callMobile" />
+  <van-cell wx:if="{{shopIndex != -1 && shops[shopIndex].consignee}}" title="联系人" value="{{shops[shopIndex].consignee}}" />
+  <van-cell wx:if="{{shopIndex != -1}}" title="电话" value="{{shops[shopIndex].linkPhone}}" is-link bind:click="calltelephone" />
   <van-cell wx:if="{{shopIndex != -1}}" title="地址" title-width="64rpx" value="{{shops[shopIndex].address}}" is-link bind:click="goMap" />
 </van-cell-group>
 

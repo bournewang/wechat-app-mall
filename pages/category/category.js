@@ -59,11 +59,11 @@ Page({
       } else {
         categorySelected = firstCategories[0]
       }
-      const resAd = await WXAPI.adPosition('category_' + categorySelected.id)
+      // const resAd = await WXAPI.adPosition('category_' + categorySelected.id)
       let adPosition = null
-      if (resAd.code === 0) {
-        adPosition = resAd.data
-      }
+      // if (resAd.code === 0) {
+      //   adPosition = resAd.data
+      // }
       this.setData({
         page: 1,
         activeCategory,
@@ -134,11 +134,11 @@ Page({
       return
     }
     const categorySelected = this.data.firstCategories[idx]
-    const res = await WXAPI.adPosition('category_' + categorySelected.id)
+    // const res = await WXAPI.adPosition('category_' + categorySelected.id)
     let adPosition = null
-    if (res.code === 0) {
-      adPosition = res.data
-    }
+    // if (res.code === 0) {
+    //   adPosition = res.data
+    // }
     this.setData({
       page: 1,
       secondCategoryId: '',
@@ -226,7 +226,7 @@ Page({
     })
   },
   async addShopCarDone(options){
-    const res = await WXAPI.shippingCarInfoAddItem(wx.getStorageSync('token'), options.goodsId, options.buyNumber, options.sku)
+    const res = await WXAPI.shippingCarInfoAddItem(options.goodsId, options.buyNumber)
     if (res.code == 30002) {
       // 需要选择规格尺寸
       const skuCurGoodsRes = await WXAPI.goodsDetail(options.goodsId)

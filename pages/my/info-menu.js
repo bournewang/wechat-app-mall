@@ -17,9 +17,9 @@ Page({
     const res = await WXAPI.userDetail(wx.getStorageSync('token'))
     if (res.code == 0) {
       let _data = {}
-      _data.apiUserInfoMap = res.data
-      if (res.data.base.mobile) {
-        _data.userMobile = res.data.base.mobile
+      _data.userInfo = res.data
+      if (res.data.base.telephone) {
+        _data.usertelephone = res.data.base.telephone
       }
       if (this.data.order_hx_uids && this.data.order_hx_uids.indexOf(res.data.base.id) != -1) {
         _data.canHX = true // 具有扫码核销的权限

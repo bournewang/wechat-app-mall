@@ -25,7 +25,7 @@ Page({
       })
       return;
     }
-    WXAPI.bindMobileWxapp(wx.getStorageSync('token'), this.data.code, e.detail.encryptedData, e.detail.iv).then(res => {
+    WXAPI.bindtelephoneWxapp(wx.getStorageSync('token'), this.data.code, e.detail.encryptedData, e.detail.iv).then(res => {
       AUTH.wxaCode().then(code => {
         this.data.code = code
       })
@@ -53,7 +53,7 @@ Page({
     const res = await WXAPI.userDetail(wx.getStorageSync('token'))
     if (res.code == 0) {
       let _data = {}
-      _data.apiUserInfoMap = res.data
+      _data.userInfo = res.data
       _data.nick = res.data.base.nick
       _data.avatarUrl = res.data.base.avatarUrl
       if (!res.data.base.gender) {

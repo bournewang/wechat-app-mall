@@ -6,7 +6,7 @@
       </view>
       <view class="input">
         <view>工厂账号</view>
-        <input name='mobile' type="text" placeholder="api工厂注册的手机号码" placeholder-class="placeholder" />
+        <input name='telephone' type="text" placeholder="api工厂注册的手机号码" placeholder-class="placeholder" />
       </view>
       <view class="input">
         <view>发票抬头</view>

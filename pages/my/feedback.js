@@ -45,7 +45,7 @@ Page({
     }
     const extJsonStr = {}
     extJsonStr['姓名'] = this.data.name
-    extJsonStr['联系电话'] = this.data.mobile
+    extJsonStr['联系电话'] = this.data.telephone
     extJsonStr['微信'] = this.data.wx
 
     // 批量上传附件

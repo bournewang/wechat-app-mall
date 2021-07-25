@@ -82,13 +82,13 @@ Page({
     // 提交保存
     let comName = e.detail.value.comName;
     let tfn = e.detail.value.tfn;
-    let mobile = e.detail.value.mobile;
+    let telephone = e.detail.value.telephone;
     let amount = e.detail.value.amount;
     let consumption = e.detail.value.consumption;
     let remark = e.detail.value.remark;
     let address = e.detail.value.address;
     let bank = e.detail.value.bank;
-    if (!mobile) {
+    if (!telephone) {
       wx.showToast({
         title: '请填写您在工厂注册的手机号码',
         icon: 'none'
@@ -124,7 +124,7 @@ Page({
       return
     }
     const extJsonStr = {}
-    extJsonStr['api工厂账号'] = mobile
+    extJsonStr['api工厂账号'] = telephone
     extJsonStr['地址与电话'] = address
     extJsonStr['开户行与账号'] = bank
     WXAPI.invoiceApply({

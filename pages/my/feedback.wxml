@@ -11,7 +11,7 @@
   <van-field
     label="联系电话"
     type="number"
-    model:value="{{ mobile }}"
+    model:value="{{ telephone }}"
     placeholder="方便我们与您联系"
     clearable
   />

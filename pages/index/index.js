@@ -118,12 +118,12 @@ Page({
         })
       }      
     })
-    that.getCoupons()
-    that.getNotice()
-    that.kanjiaGoods()
-    that.pingtuanGoods()
-    this.wxaMpLiveRooms()
-    this.adPosition()
+    // that.getCoupons()
+    // that.getNotice()
+    // that.kanjiaGoods()
+    // that.pingtuanGoods()
+    // this.wxaMpLiveRooms()
+    // this.adPosition()
     // 读取系统参数
     this.readConfigVal()
     getApp().configLoadOK = () => {
@@ -131,12 +131,13 @@ Page({
     }
   },
   readConfigVal() {
+    var config = wx.getStorageSync('config')
     wx.setNavigationBarTitle({
-      title: wx.getStorageSync('mallName')
+      title: config.mallName
     })
     this.setData({
-      mallName:wx.getStorageSync('mallName')?wx.getStorageSync('mallName'):'',
-      show_buy_dynamic: wx.getStorageSync('show_buy_dynamic')
+      mallName: config.mallName,
+      show_buy_dynamic: false
     })
   },
   async miaoshaGoods(){
@@ -198,8 +199,8 @@ Page({
     })
     // 获取购物车数据，显示TabBarBadge
     TOOLS.showTabBarBadge()
-    this.goodsDynamic()
-    this.miaoshaGoods()
+    // this.goodsDynamic()
+    // this.miaoshaGoods()
   },
   async goodsDynamic(){
     const res = await WXAPI.goodsDynamic(0)

@@ -45,7 +45,7 @@ Page({
       })
       if (res.code == 0) {
         res.data.result.forEach(ele => {
-          ele.showStr = ele.name + ' ' + ele.mobile + ' ' + ele.statusStr
+          ele.showStr = ele.name + ' ' + ele.telephone + ' ' + ele.statusStr
         })
         this.setData({
           peisongMembers: res.data.result
@@ -222,7 +222,7 @@ Page({
       const obj = this.data.peisongMembers[e.detail.value]
       this.setData({
         membersSelectIndex: e.detail.value,
-        membersSelectStr: obj.name + ' ' + obj.mobile
+        membersSelectStr: obj.name + ' ' + obj.telephone
       })
     },
     async paidan() {
@@ -250,14 +250,14 @@ Page({
         })
       }
     },
-    callMobile() {
+    calltelephone() {
       wx.makePhoneCall({
-        phoneNumber: this.data.orderDetail.peisongMember.mobile,
+        phoneNumber: this.data.orderDetail.peisongMember.telephone,
       })
     },
-    callMobile2() {
+    calltelephone2() {
       wx.makePhoneCall({
-        phoneNumber: this.data.orderDetail.logistics.mobile,
+        phoneNumber: this.data.orderDetail.logistics.telephone,
       })
     },
     goMap() {

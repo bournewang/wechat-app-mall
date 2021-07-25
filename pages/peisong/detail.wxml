@@ -28,14 +28,14 @@
   </view>
   <view class="vant-contaner">
     <van-cell-group title="顾客信息">
-      <van-cell title="姓名" value="{{orderDetail.logistics.linkMan}}" />      
-      <van-cell title="手机" value="{{orderDetail.logistics.mobile}}" bindtap="callMobile2" />      
+      <van-cell title="姓名" value="{{orderDetail.logistics.consignee}}" />      
+      <van-cell title="手机" value="{{orderDetail.logistics.telephone}}" bindtap="calltelephone2" />      
     </van-cell-group>
   </view>
   <view wx:if="{{orderDetail.peisongMember}}" class="vant-contaner">
     <van-cell-group title="服务人员">
       <van-cell title="姓名" value="{{orderDetail.peisongMember.name}}" />      
-      <van-cell title="手机" value="{{orderDetail.peisongMember.mobile}}" bindtap="callMobile" />         
+      <van-cell title="手机" value="{{orderDetail.peisongMember.telephone}}" bindtap="calltelephone" />         
       <van-cell wx:if="{{orderDetail.peisongOrderInfo.estimatedCompletionTime}}" title="预计完成时间" value="{{orderDetail.peisongOrderInfo.estimatedCompletionTime}}" /> 
     </van-cell-group>
   </view>

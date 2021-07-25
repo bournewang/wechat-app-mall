@@ -1,4 +1,4 @@
-<block wx:if="{{ userInfoStatus == 1 }}">
+<block wx:if="{{ userInfoStatus != 2 }}">
   <view class="login-box">
     <image class="logo" src="/images/wx.jpg" mode="widthFix"></image>
     <view class="line"></view>
@@ -11,12 +11,13 @@
 </block>
 <block wx:if="{{ userInfoStatus == 2 }}">
   <view class="header-box">
-    <image class="avatar" src="{{ apiUserInfoMap.base.avatarUrl }}" mode="aspectFill"></image>
+    <image class="avatar" src="{{ userInfo.avatar}}" mode="aspectFill"></image>
     <view class="r">
-      <view class="uid">用户ID: {{ apiUserInfoMap.base.id }}</view>
-      <view class="nick">{{ apiUserInfoMap.base.nick }}</view>
+      <view class="uid">用户ID: 11{{ userInfo.id }}</view>
+      <view class="nick">{{ userInfo.nickname }}</view>
     </view>
   </view>
+<!-- 
   <view class="asset">
     <view class='item' bindtap='goAsset'>
       <view class="amount">{{balance}}</view>
@@ -35,6 +36,7 @@
       <view>成长值</view>
     </view>
   </view>
+   -->
   <view class="space van-hairline--bottom"></view>
   <van-cell title="我的订单" value="更多" is-link url="/pages/order-list/index" />
   <van-grid clickable column-num="5">
@@ -42,26 +44,27 @@
     <van-grid-item icon="logistics" text="待发货" badge="{{count_id_no_transfer}}" bindtap='goOrder' data-type="1" />
     <van-grid-item icon="certificate" text="待收货" badge="{{count_id_no_confirm}}" bindtap='goOrder' data-type="2" />
     <van-grid-item icon="flower-o" text="待评价" badge="{{count_id_no_reputation}}" bindtap='goOrder' data-type="3" />
-    <van-grid-item icon="after-sale" text="售后" bindtap='goOrder' data-type="99" />
+    <!-- <van-grid-item icon="after-sale" text="售后" bindtap='goOrder' data-type="99" /> -->
   </van-grid>
-  <van-cell wx:if="{{ cps_open == '1' }}" title="CPS订单" value="管理" is-link url="/packageCps/pages/order-list/cps" />
-  <van-cell wx:if="{{ recycle_open == '1' }}" title="回收订单" value="管理" is-link url="/pages/recycle/orders" />
+  <!-- <van-cell wx:if="{{ cps_open == '1' }}" title="CPS订单" value="管理" is-link url="/packageCps/pages/order-list/cps" /> -->
+  <!-- <van-cell wx:if="{{ recycle_open == '1' }}" title="回收订单" value="管理" is-link url="/pages/recycle/orders" /> -->
   <van-cell title="常用功能" />
   <van-grid clickable>
-    <van-grid-item wx:if="{{canHX}}" icon="scan" text="扫码核销" bind:click="scanOrderCode" />
-    <van-grid-item icon="paid" text="优惠买单" url="/pages/maidan/index" />
-    <van-grid-item icon="balance-list-o" text="资金明细" url="/pages/asset/index" />
+    <!-- <van-grid-item wx:if="{{canHX}}" icon="scan" text="扫码核销" bind:click="scanOrderCode" /> -->
+    <!-- <van-grid-item icon="paid" text="优惠买单" url="/pages/maidan/index" /> -->
+    <!-- <van-grid-item icon="balance-list-o" text="资金明细" url="/pages/asset/index" />
     <van-grid-item icon="bill-o" text="申请发票" url="/pages/invoice/apply" />
     <van-grid-item icon="bill-o" text="开票记录" url="/pages/invoice/list" />
-    <van-grid-item icon="coupon-o" text="优惠券" url="/pages/coupons/index" link-type="switchTab" />
-    <van-grid-item wx:if="{{ show_score_sign == 1 }}" icon="calendar-o" text="签到赚积分" url="/pages/sign/index" />
+    <van-grid-item icon="coupon-o" text="优惠券" url="/pages/coupons/index" link-type="switchTab" /> -->
+    <!-- <van-grid-item wx:if="{{ show_score_sign == 1 }}" icon="calendar-o" text="签到赚积分" url="/pages/sign/index" /> -->
   </van-grid>
   <!-- 老样式 -->
+<!--   
   <view class="container">
-    <block wx:if="{{apiUserInfoMap.peisongMember && apiUserInfoMap.peisongMember.type != 0}}">
+    <block wx:if="{{userInfo.peisongMember && userInfo.peisongMember.type != 0}}">
       <view class="space"></view>
       <view class="menu-item">
-        <view class="l">工作状态 ({{apiUserInfoMap.peisongMember.statusStr}})</view>
+        <view class="l">工作状态 ({{userInfo.peisongMember.statusStr}})</view>
         <van-switch checked="{{ memberChecked }}" bind:change="memberCheckedChange" />
       </view>
       <view class="line"></view>
@@ -71,7 +74,7 @@
           <image class="next" src="/images/icon/next.png"></image>
         </view>
       </navigator>
-      <block wx:if="{{apiUserInfoMap.peisongMember.type == 2}}">
+      <block wx:if="{{userInfo.peisongMember.type == 2}}">
         <view class="line"></view>
         <navigator url="/pages/peisong/orders?status=1">
           <view class="menu-item">
@@ -83,13 +86,14 @@
       <view class="space"></view>
     </block>
   </view>
-
-  <van-cell-group wx:if="{{ show_3_seller == 1 }}" title="三级分销">
-    <van-cell wx:if="{{!apiUserInfoMap.base.isSeller}}" title="成为分销商" is-link url="/packageFx/pages/apply/index" />
+ -->
+  <van-cell-group wx:if="1" title="分销">
+    <van-cell wx:if="{{userInfo.apply_status != 'grant'}}" title="成为分销商" is-link url="/packageFx/pages/apply/index" />
     <van-cell wx:else title="分销中心" is-link url="/packageFx/pages/index/index" />
-    <van-cell wx:if="{{apiUserInfoMap.base.isSeller}}" title="我的团队" is-link url="/packageFx/pages/myusers/index" />
-    <van-cell wx:if="{{apiUserInfoMap.base.isSeller}}" title="推广订单" is-link url="/packageFx/pages/commisionLog/index" />
+    <van-cell wx:if="{{userInfo}}" title="我的团队" is-link url="/packageFx/pages/myusers/index" />
+    <!-- <van-cell wx:if="{{userInfo}}" title="推广订单" is-link url="/packageFx/pages/commisionLog/index" /> -->
   </van-cell-group>
+<!-- 
   <van-cell-group title="其他功能">
     <van-cell wx:if="{{ show_quan_exchange_score == 1 }}" title="积分券兑换积分" is-link url="/pages/score-excharge/index" />
     <van-cell wx:if="{{ show_score_exchange_growth == 1 }}" title="积分兑换成长值" is-link url="/pages/score-excharge/growth" />
@@ -97,4 +101,5 @@
     <van-cell title="个人信息" is-link url="/pages/my/info-menu" />
     <van-cell title="系统设置" is-link url="/pages/my/setting" />
   </van-cell-group>
+   -->
 </block>

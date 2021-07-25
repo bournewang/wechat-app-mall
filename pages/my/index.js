@@ -61,30 +61,20 @@ Page({
     })
   },
   async getUserApiInfo() {
-    const res = await WXAPI.userDetail(wx.getStorageSync('token'))
+    const res = await WXAPI.userDetail()
     if (res.code == 0) {
+      wx.setStorageSync('userInfo', res.data)
       let _data = {}
-      _data.apiUserInfoMap = res.data
-      if (res.data.base.mobile) {
-        _data.userMobile = res.data.base.mobile
+      _data.userInfo = res.data
+      if (res.data.telephone) {
+        _data.usertelephone = res.data.telephone
       }
-      if (res.data.base.nick && res.data.base.avatarUrl) {
+      if (res.data.nickname && res.data.avatar) {
         _data.userInfoStatus = 2
       } else {
         _data.userInfoStatus = 1
       }
-      if (this.data.order_hx_uids && this.data.order_hx_uids.indexOf(res.data.base.id) != -1) {
-        _data.canHX = true // 具有扫码核销的权限
-      }
-      const adminUserIds = wx.getStorageSync('adminUserIds')
-      if (adminUserIds && adminUserIds.indexOf(res.data.base.id) != -1) {
-        _data.isAdmin = true
-      }
-      if (res.data.peisongMember && res.data.peisongMember.status == 1) {
-        _data.memberChecked = false
-      } else {
-        _data.memberChecked = true
-      }
+
       this.setData(_data);
     }
   },
@@ -184,9 +174,9 @@ Page({
   },
   async _updateUserInfo(userInfo) {
     const postData = {
-      token: wx.getStorageSync('token'),
-      nick: userInfo.nickName,
-      avatarUrl: userInfo.avatarUrl,
+      // token: wx.getStorageSync('token'),
+      nickname: userInfo.nickName,
+      avatar: userInfo.avatarUrl,
       city: userInfo.city,
       province: userInfo.province,
       gender: userInfo.gender,

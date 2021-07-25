@@ -17,29 +17,37 @@ function wxpay(type, money, orderId, redirectUrl, data) {
       id: orderId
     };
   }
-  if (type === 'paybill') {
-    postData.remark = "优惠买单 ：" + data.money;
-    postData.nextAction = {
-      type: 4,
-      uid: wx.getStorageSync('uid'),
-      money: data.money
-    };
-  }
-  if (type === 'fxsBuy') {
-    postData.remark = "购买分销资格";
-    postData.nextAction = {
-      type: 13
-    };
-  }
+  // if (type === 'paybill') {
+  //   postData.remark = "优惠买单 ：" + data.money;
+  //   postData.nextAction = {
+  //     type: 4,
+  //     uid: wx.getStorageSync('uid'),
+  //     money: data.money
+  //   };
+  // }
+  // if (type === 'fxsBuy') {
+  //   postData.remark = "购买分销资格";
+  //   postData.nextAction = {
+  //     type: 13
+  //   };
+  // }
   postData.payName = postData.remark;
   if (postData.nextAction) {
     postData.nextAction = JSON.stringify(postData.nextAction);  
   }
-  WXAPI.wxpay(postData).then(function (res) {
-    if (res.code == 0) {
+  WXAPI.wxpay(orderId).then(function (res) {
+    if (res.success) {
       // 发起支付
+      console.log("call wx.requestPayment with: ")
+      console.log({
+        timeStamp: ''+res.data.timeStamp+'',
+        nonceStr: res.data.nonceStr,
+        package: res.data.package,
+        signType: res.data.signType,
+        paySign: res.data.paySign,
+      })
       wx.requestPayment({
-        timeStamp: res.data.timeStamp,
+        timeStamp: ''+res.data.timeStamp+'',
         nonceStr: res.data.nonceStr,
         package: res.data.package,
         signType: res.data.signType,
@@ -63,7 +71,7 @@ function wxpay(type, money, orderId, redirectUrl, data) {
     } else {
       wx.showModal({
         title: '出错了',
-        content: JSON.stringify(res),
+        content: res.msg,
         showCancel: false
       })
     }

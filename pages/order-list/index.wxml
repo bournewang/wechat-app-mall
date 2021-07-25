@@ -12,7 +12,7 @@
   <view class="order-list" hidden="{{orderList ? false : true}}">
     <view class="a-order" wx:for="{{orderList}}" wx:key="index">
       <navigator url="/pages/order-details/index?id={{item.id}}" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
-        <view class="weui-cell__bd">{{item.orderNumber}}</view>
+        <view class="weui-cell__bd">{{item.orderNo}}</view>
         <view class="weui-cell__ft weui-cell__ft_in-access">{{item.statusStr}}</view>
       </navigator>
       <wxs module="goodsDetailPage">
@@ -33,14 +33,15 @@
       }
       </wxs>
       <scroll-view class="goods-img-container" scroll-x="true">
-        <view class="img-box" wx:for="{{goodsMap[item.id]}}" wx:key="index">
-          <navigator url="{{ goodsDetailPage.url(item) }}"><image src="{{item.pic}}" class="goods-img"></image></navigator>
+        <view class="img-box" wx:for="{{item.goods}}" wx:key="index">
+          {{item.name}}
+          <navigator url="{{ goodsDetailPage.url(item.id) }}"><image src="{{item.img_s}}" class="goods-img"></image></navigator>
         </view>
       </scroll-view>
       <view class="goods-price">
-        共 {{item.goodsNumber}} 件商品 合计：
-        <text class="p" wx:if="{{item.score <= 0}}">¥ {{item.amountReal}}</text>
-        <text class="p" wx:if="{{item.score > 0}}">¥ {{item.amountReal}} + {{item.score}} 积分</text>
+        共 {{item.total_quantity}} 件商品 合计：
+        <text class="p">¥ {{item.orderAmount}}</text>
+        <!-- <text class="p" wx:if="{{item.score > 0}}">¥ {{item.amountReal}} + {{item.score}} 积分</text> -->
       </view>
       <view class="goods-info">
         <view class="goods-des">

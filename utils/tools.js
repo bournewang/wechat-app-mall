@@ -10,23 +10,23 @@ async function showTabBarBadge(noTabBarPage){
   // 自营商品
   let res = await WXAPI.shippingCarInfo(token)
   if (res.code == 0) {
-    number += res.data.number
+    number += res.data.total_quantity
   }
   // vop 购物车
-  res = await WXAPI.jdvopCartInfo(token)
-  if (res.code == 0) {
-    number += res.data.number
-  }
+  // res = await WXAPI.jdvopCartInfo(token)
+  // if (res.code == 0) {
+  //   number += res.data.number
+  // }
   if (!noTabBarPage) {
     if (number == 0) {
       // 删除红点点
       wx.removeTabBarBadge({
-        index: 3
+        index: 2
       })
     } else {
       // 显示红点点
       wx.setTabBarBadge({
-        index: 3,
+        index: 2,
         text: number + ''
       })
     }

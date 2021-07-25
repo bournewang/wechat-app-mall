@@ -95,7 +95,7 @@ module.exports =
 /* eslint-disable */
 // 小程序开发api接口工具包，https://github.com/gooking/wxapi
 var API_BASE_URL = 'https://api.it120.cc';
-var API_BASE_URL = 'http://127.0.0.1:8000';
+var API_BASE_URL = 'http://wemall.local';
 var subDomain = '-';
 var merchantId = '0';
 
@@ -105,7 +105,8 @@ var request = function request(url, needSubDomain, method, data) {
     _url = url
   }
   var header = {
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Bearer ' + wx.getStorageSync('token')
   };
   return new Promise(function (resolve, reject) {
     wx.request({
@@ -292,8 +293,9 @@ module.exports = {
   sendTempleMsg: function sendTempleMsg(data) {
     return request('/template-msg/put', true, 'post', data);
   },
-  wxpay: function wxpay(data) {
-    return request('/pay/wx/wxapp', true, 'post', data);
+  wxpay: function wxpay(id) {
+    // return request('/pay/wx/wxapp', true, 'post', data);
+    return request('/order/'+id+'/place', true, 'post');
   },
   wxpayFOMO: function wxpayFOMO(data) {
     return request('/pay/fomo/wxapp', true, 'post', data);
@@ -330,6 +332,9 @@ module.exports = {
       code: code,
       type: 2
     });
+  },
+  register_wx: function register_wx(data) {
+    return request('/user/wxapp/register', true, 'post', data);
   },
   login_q: function login_q(code) {
     return request('/user/q/login', true, 'post', {
@@ -486,26 +491,14 @@ module.exports = {
   goodsFavList: function goodsFavList(data) {
     return request('/shop/goods/fav/list', true, 'post', data);
   },
-  goodsFavPut: function goodsFavPut(token, goodsId) {
-    return request('/shop/goods/fav/add', true, 'post', {
-      token: token, goodsId: goodsId
-    });
+  goodsFavPut: function goodsFavAdd(goodsId) {
+    return request('/goods/'+goodsId+'/like', true, 'post');
   },
-  goodsFavAdd: function goodsFavAdd(data) {
-    return request('/shop/goods/fav/add', true, 'post', data);
+  goodsFavCheck: function goodsFavCheck(goodsId) {
+    return request('/goods/'+goodsId+'/fav', true, 'get');
   },
-  goodsFavCheck: function goodsFavCheck(token, goodsId) {
-    return request('/shop/goods/fav/check', true, 'get', {
-      token: token, goodsId: goodsId
-    });
-  },
-  goodsFavDelete: function goodsFavDelete(token) {
-    var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-    var goodsId = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-
-    return request('/shop/goods/fav/delete', true, 'post', {
-      token: token, id: id, goodsId: goodsId
-    });
+  goodsFavDelete: function goodsFavDelete(goodsId) {
+    return request('/goods/'+goodsId+'/like', true, 'delete');
   },
   goodsFavDeleteV2: function goodsFavDeleteV2(data) {
     return request('/shop/goods/fav/delete', true, 'post', data);
@@ -559,32 +552,28 @@ module.exports = {
     });
   },
   addAddress: function addAddress(data) {
-    return request('/user/shipping-address/add', true, 'post', data);
+    return request('/address', true, 'post', data);
   },
-  updateAddress: function updateAddress(data) {
-    return request('/user/shipping-address/update', true, 'post', data);
+  updateAddress: function updateAddress(id, data) {
+    return request('/address/'+id, true, 'post', data);
   },
-  deleteAddress: function deleteAddress(token, id) {
-    return request('/user/shipping-address/delete', true, 'post', {
-      id: id,
-      token: token
-    });
+  deleteAddress: function deleteAddress(id) {
+    return request('/address/'+id, true, 'delete');
   },
-  queryAddress: function queryAddress(token) {
-    return request('/user/shipping-address/list', true, 'get', {
-      token: token
-    });
+  queryAddress: function queryAddress() {
+    return request('/address/list', true, 'get');
   },
-  defaultAddress: function defaultAddress(token) {
-    return request('/user/shipping-address/default/v2', true, 'get', {
-      token: token
-    });
+  defaultAddress: function defaultAddress() {
+    return request('/address/default', true, 'get');
   },
-  addressDetail: function addressDetail(token, id) {
-    return request('/user/shipping-address/detail/v2', true, 'get', {
-      id: id,
-      token: token
-    });
+  selectAddress: function selectAddress(id) {
+    return request('/address/'+id+'/select', true, 'post');
+  },
+  currentAddress: function currentAddress(){
+    return request('/address/current', true, 'get');
+  },
+  addressDetail: function addressDetail(id) {
+    return request('/address/'+id, true, 'get');
   },
   pingtuanSet: function pingtuanSet(goodsId) {
     return request('/shop/goods/pingtuan/set', true, 'get', {
@@ -649,11 +638,11 @@ module.exports = {
       token: token, encryptedData: encryptedData, iv: iv, pwd: pwd
     });
   },
-  bindMobileWxapp: function bindMobileWxapp(token, code, encryptedData, iv) {
+  bindMobileWxapp: function bindMobileWxapp(code, encryptedData, iv) {
     var pwd = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
 
-    return request('/user/wxapp/bindMobile', true, 'post', {
-      token: token, code: code, encryptedData: encryptedData, iv: iv, pwd: pwd
+    return request('/user/mobile', true, 'post', {
+      code: code, encryptedData: encryptedData, iv: iv, pwd: pwd
     });
   },
   bindMobileTta: function bindMobileTta(token, encryptedData, iv) {
@@ -670,10 +659,8 @@ module.exports = {
       token: token, mobile: mobile, code: code, pwd: pwd
     });
   },
-  userDetail: function userDetail(token) {
-    return request('/user/detail', true, 'get', {
-      token: token
-    });
+  userDetail: function userDetail() {
+    return request('/user/info', true, 'get');
   },
   userDetailSpreadUser: function userDetailSpreadUser(token, uid) {
     return request('/user/detail/spreadUser', true, 'get', {
@@ -694,18 +681,10 @@ module.exports = {
     return request('/order/create', true, 'post', data);
   },
   orderList: function orderList(data) {
-    return request('/order/list', true, 'post', data);
+    return request('/order/list', true, 'get', data);
   },
-  orderDetail: function orderDetail(token, id) {
-    var hxNumber = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-    var peisongOrderId = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
-
-    return request('/order/detail', true, 'get', {
-      id: id,
-      token: token,
-      hxNumber: hxNumber,
-      peisongOrderId: peisongOrderId
-    });
+  orderDetail: function orderDetail(id) {
+    return request('/order/'+id, true, 'get');
   },
   orderDelivery: function orderDelivery(token, orderId) {
     return request('/order/delivery', true, 'post', {
@@ -778,14 +757,14 @@ module.exports = {
   withDrawLogs: function withDrawLogs(data) {
     return request('/user/withDraw/list', true, 'post', data);
   },
-  province: function province() {
-    return request('/common/region/v2/province', false, 'get');
+  provinces: function provinces() {
+    return request('/province/list', true, 'get');
   },
-  city: function city() {
-    return request('/common/region/v2/city', false, 'get');
+  cities: function cities(province_id) {
+    return request('/city/list', true, 'get', {province_id: province_id});
   },
-  districts: function districts() {
-    return request('/common/region/v2/districts', false, 'get');
+  districts: function districts(city_id) {
+    return request('/district/list', true, 'get', {city_id: city_id});
   },
   streets: function streets() {
     return request('/common/region/v2/streets', false, 'get');
@@ -821,34 +800,37 @@ module.exports = {
   vipLevel: function vipLevel() {
     return request('/config/vipLevel', true, 'get');
   },
-  fxApply: function fxApply(token, name, mobile) {
-    return request('/saleDistribution/apply', true, 'post', { token: token, name: name, mobile: mobile });
+  fxApply: function fxApply(name, mobile) {
+    return request('/sale/apply', true, 'post', {name: name, mobile: mobile });
   },
   fxSetting: function fxSetting() {
-    return request('/saleDistribution/setting', true, 'get');
+    return request('/sale/setting', true, 'get');
   },
   fxBuy: function fxBuy(token) {
     return request('/saleDistribution/buy', true, 'post', { token: token });
   },
   fxApplyProgress: function fxApplyProgress(token) {
-    return request('/saleDistribution/apply/progress', true, 'get', { token: token });
+    return request('/sale/apply/progress', true, 'get', { token: token });
   },
   fxApplyProgressV2: function fxApplyProgressV2(token) {
     return request('/saleDistribution/apply/progress/v2', true, 'get', { token: token });
   },
   fxMembers: function fxMembers(data) {
-    return request('/saleDistribution/members', true, 'post', data);
+    return request('/sale/members', true, 'get', data);
   },
   fxCommisionLog: function fxCommisionLog(data) {
-    return request('/saleDistribution/commision/log', true, 'post', data);
+    return request('/sale/commision/log', true, 'post', data);
   },
   fxCommisionFreezeAmount: function fxCommisionFreezeAmount(token) {
-    return request('/saleDistribution/commission/freeze', true, 'get', { token: token });
+    return request('/sale/commission/freeze', true, 'get', { token: token });
   },
   fxSaleroomRankTotal: function fxSaleroomRankTotal(page, pageSize) {
-    return request('/saleDistribution/sale-room-rank/total', true, 'get', {
+    return request('/sale/sale-room-rank/total', true, 'get', {
       page: page, pageSize: pageSize
     });
+  },
+  fxRevenue: function fxRevenue(){
+    return request('/user/revenue', true, 'get');
   },
   fxSaleroomRankDaily: function fxSaleroomRankDaily(page, pageSize, day) {
     return request('/saleDistribution/sale-room-rank/daily', true, 'get', {
@@ -1293,22 +1275,18 @@ module.exports = {
     return request('/cms/news/fav/delete', true, 'post', { token: token, newsId: newsId });
   },
   shippingCarInfo: function shippingCarInfo(token) {
-    return request('/shopping-cart/info', true, 'get', {
-      token: token
-    });
+    return request('/cart/info', true, 'get');
   },
-  shippingCarInfoAddItem: function shippingCarInfoAddItem(token, goodsId, number, sku, addition) {
-    return request('/shopping-cart/add', true, 'post', {
-      token: token,
+  shippingCarInfoAddItem: function shippingCarInfoAddItem(goodsId, quantity) {
+    return request('/cart/add', true, 'post', {
       goodsId: goodsId,
-      number: number,
-      sku: sku && sku.length > 0 ? JSON.stringify(sku) : '',
-      addition: addition && addition.length > 0 ? JSON.stringify(addition) : ''
+      quantity: quantity,
     });
   },
-  shippingCarInfoModifyNumber: function shippingCarInfoModifyNumber(token, key, number) {
-    return request('/shopping-cart/modifyNumber', true, 'post', {
-      token: token, key: key, number: number
+  shippingCarInfoModifyNumber: function shippingCarInfoModifyNumber(goodsId, quantity) {
+    return request('/cart/update', true, 'post', {
+      goodsId: goodsId, 
+      quantity: quantity
     });
   },
   shippingCarInfoRemoveItem: function shippingCarInfoRemoveItem(token, key) {
@@ -1387,10 +1365,8 @@ module.exports = {
   siteStatistics: function siteStatistics() {
     return request('/site/statistics', true, 'get');
   },
-  orderStatistics: function orderStatistics(token) {
-    return request('/order/statistics', true, 'get', {
-      token: token
-    });
+  orderStatistics: function orderStatistics() {
+    return request('/order/statistics', true, 'get');
   },
   siteStatisticsSaleroom: function siteStatisticsSaleroom(data) {
     return request('/site/statistics/saleroom', true, 'get', data);

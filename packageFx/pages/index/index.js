@@ -67,7 +67,7 @@ Page({
   },
 
   async commision() {
-    const uid = this.data.apiUserInfoMap.base.id
+    const uid = this.data.userInfo.base.id
     var commisionData = this.data.commisionData
     const nowDate = new Date()
     console.log('今天', nowDate.format('yyyyMMdd'))
@@ -127,17 +127,25 @@ Page({
   },
   getUserApiInfo: function () {
     var that = this;
-    WXAPI.userDetail(wx.getStorageSync('token')).then(function (res) {
+    WXAPI.userDetail().then(function (res) {
       if (res.code == 0) {
         let _data = {}
-        _data.apiUserInfoMap = res.data
+        console.log(res.data)
+        _data.userInfo = res.data
         that.setData(_data);
-        that.commision();
-        if (res.data.base.isSeller) {
-          // 判断是否是市区合伙人
-          that.fxCities()
-        }
+        // that.commision();
+        // if (res.data.base.isSeller) {
+        //   // 判断是否是市区合伙人
+        //   that.fxCities()
+        // }
       }
+    });
+    WXAPI.fxRevenue().then((res) => {
+      let _data = {}
+      console.log("revenus ---- ")
+      console.log(res)
+      _data.revenue = res.data
+      that.setData(_data);
     })
   },
   doneShow: function () {

@@ -6,7 +6,6 @@ Page({
    * 页面的初始数据
    */
   data: {
-    
   },
 
   /**
@@ -20,12 +19,21 @@ Page({
    */
   onShow: function () {
     const _this = this
-    WXAPI.userDetail(wx.getStorageSync('token')).then(res => {
-      if (res.code === 0) {
-        _this.setData({
-          userDetail: res.data
-        })
-      }
+    // WXAPI.userDetail(wx.getStorageSync('token')).then(res => {
+    //   if (res.code === 0) {
+    //     _this.setData({
+    //       userDetail: res.data
+    //     })
+    //   }
+    // })
+    var userInfo = wx.getStorageSync('userInfo')
+    console.log("on form, get storage info, ")
+    console.log(userInfo)
+    // this.data.name = userInfo.name
+    // this.data.mobile = userInfo.telephone
+    this.setData({
+      name: userInfo.nickname,
+      mobile: userInfo.mobile
     })
   },
   async adPosition() {
@@ -43,27 +51,13 @@ Page({
     this.data.mobile = e.detail.value
   },
   bindSave(){
-    const fx_subscribe_ids = wx.getStorageSync('fx_subscribe_ids')
-    if (fx_subscribe_ids) {
-      wx.requestSubscribeMessage({
-        tmplIds: fx_subscribe_ids.split(','),
-        success(res) {
-  
-        },
-        fail(e) {
-          console.error(e)
-        },
-        complete: (e) => {
-          this.bindSaveDone()
-        },
-      })
-    } else{
-      this.bindSaveDone()
-    }
+    this.bindSaveDone()
   },
   bindSaveDone: function () {
     const name = this.data.name
     const mobile = this.data.mobile
+    console.log("name "+name)
+    console.log("mobile "+mobile)
     if (!name) {
       wx.showToast({
         title: '请输入真实姓名',
@@ -78,7 +72,7 @@ Page({
       })
       return
     }
-    WXAPI.fxApply(wx.getStorageSync('token'), name, mobile).then(res => {
+    WXAPI.fxApply(name, mobile).then(res => {
       if (res.code != 0) {
         wx.showToast({
           title: res.msg,
@@ -86,6 +80,7 @@ Page({
         })
         return
       }
+      wx.setStorageSync('userInfo', res.data)
       wx.redirectTo({
         url: "/packageFx/pages/apply/index"
       })

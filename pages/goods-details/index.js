@@ -78,7 +78,7 @@ Page({
     this.readConfigVal()
     this.getGoodsDetailAndKanjieInfo(this.data.goodsId)
     this.shippingCartInfo()
-    this.goodsAddition()
+    // this.goodsAddition()
   },
   readConfigVal() {
     // 读取系统参数
@@ -149,7 +149,7 @@ Page({
 
     AUTH.checkHasLogined().then(isLogined => {
       if (isLogined) {
-        this.goodsFavCheck()
+        // this.goodsFavCheck()
       }
     })
   },
@@ -175,30 +175,39 @@ Page({
       })
     }).exec()
   },
-  async goodsFavCheck() {
-    const res = await WXAPI.goodsFavCheck(wx.getStorageSync('token'), this.data.goodsId)
-    if (res.code == 0) {
-      this.setData({
-        faved: true
-      })
-    } else {
-      this.setData({
-        faved: false
-      })
-    }
-  },
+  // async goodsFavCheck() {
+  //   const res = await WXAPI.goodsFavCheck(wx.getStorageSync('token'), this.data.goodsId)
+  //   if (res.code == 0) {
+  //     this.setData({
+  //       faved: true
+  //     })
+  //   } else {
+  //     this.setData({
+  //       faved: false
+  //     })
+  //   }
+  // },
   async addFav() {
+    var that = this
     AUTH.checkHasLogined().then(isLogined => {
+      console.log("======= goodsid: "+this.data.goodsId)
       if (isLogined) {
         if (this.data.faved) {
           // 取消收藏
-          WXAPI.goodsFavDelete(wx.getStorageSync('token'), '', this.data.goodsId).then(res => {
-            this.goodsFavCheck()
+          WXAPI.goodsFavDelete(this.data.goodsId).then(res => {
+            // this.goodsFavCheck()
+            that.setData({
+              faved: false
+            })
           })
         } else {
           // 加入收藏
-          WXAPI.goodsFavPut(wx.getStorageSync('token'), this.data.goodsId).then(res => {
-            this.goodsFavCheck()
+          console.log("call WXAPI.goodsFavPut=====")
+          WXAPI.goodsFavPut(this.data.goodsId).then(res => {
+            // this.goodsFavCheck()
+            that.setData({
+              faved: true
+            })
           })
         }
       }
@@ -208,7 +217,7 @@ Page({
     const token = wx.getStorageSync('token')
     const that = this;
     const goodsDetailRes = await WXAPI.goodsDetail(goodsId, token ? token : '')
-    const goodsKanjiaSetRes = await WXAPI.kanjiaSet(goodsId)
+    const goodsKanjiaSetRes = {};//await WXAPI.kanjiaSet(goodsId)
     if (goodsDetailRes.code == 0) {
       if (!goodsDetailRes.data.pics || goodsDetailRes.data.pics.length == 0) {
         goodsDetailRes.data.pics = [{
@@ -223,24 +232,26 @@ Page({
           totalScoreToPay: goodsDetailRes.data.basicInfo.minScore
         });
       }
-      if (goodsDetailRes.data.basicInfo.shopId) {
-        this.shopSubdetail(goodsDetailRes.data.basicInfo.shopId)
-      }
-      if (goodsDetailRes.data.basicInfo.pingtuan) {
-        that.pingtuanList(goodsId)
-      }
+      // if (goodsDetailRes.data.basicInfo.shopId) {
+      //   this.shopSubdetail(goodsDetailRes.data.basicInfo.shopId)
+      // }
+      // if (goodsDetailRes.data.basicInfo.pingtuan) {
+      //   that.pingtuanList(goodsId)
+      // }
       that.data.goodsDetail = goodsDetailRes.data;
-      if (goodsDetailRes.data.basicInfo.videoId) {
-        that.getVideoSrc(goodsDetailRes.data.basicInfo.videoId);
-      }
+      // if (goodsDetailRes.data.basicInfo.videoId) {
+      //   that.getVideoSrc(goodsDetailRes.data.basicInfo.videoId);
+      // }
       let _data = {
         goodsDetail: goodsDetailRes.data,
         selectSizePrice: goodsDetailRes.data.basicInfo.minPrice,
         selectSizeOPrice: goodsDetailRes.data.basicInfo.originalPrice,
         totalScoreToPay: goodsDetailRes.data.basicInfo.minScore,
+        faved: goodsDetailRes.data.faved,
         buyNumMax: goodsDetailRes.data.basicInfo.stores,
         buyNumber: (goodsDetailRes.data.basicInfo.stores > 0) ? 1 : 0
       }
+      /*
       if (goodsKanjiaSetRes.code == 0) {
         _data.curGoodsKanjia = goodsKanjiaSetRes.data[0]
         that.data.kjId = _data.curGoodsKanjia.id
@@ -272,6 +283,7 @@ Page({
           _data.selectSizePrice = goodsDetailRes.data.basicInfo.pingtuanPrice
         }
       }
+      */
       that.setData(_data)
       that.initShareQuanziProduct()
     }
@@ -476,46 +488,7 @@ Page({
    * 加入购物车
    */
   async addShopCar() {
-    if (this.data.goodsDetail.properties && !this.data.canSubmit) {
-      if (!this.data.canSubmit) {
-        wx.showToast({
-          title: '请选择规格',
-          icon: 'none'
-        })
-      }
-      this.bindGuiGeTap()
-      return
-    }
-    const goodsAddition = []
-    if (this.data.goodsAddition) {
-      let canSubmit = true
-      this.data.goodsAddition.forEach(ele => {
-        if (ele.required) {
-          const a = ele.items.find(item => {
-            return item.active
-          })
-          if (!a) {
-            canSubmit = false
-          }
-        }
-        ele.items.forEach(item => {
-          if (item.active) {
-            goodsAddition.push({
-              id: item.id,
-              pid: item.pid
-            })
-          }
-        })
-      })
-      if (!canSubmit) {
-        wx.showToast({
-          title: '请选择配件',
-          icon: 'none'
-        })
-        this.bindGuiGeTap()
-        return
-      }
-    }
+    console.log("buy number: "+this.data.buyNumber)
     if (this.data.buyNumber < 1) {
       wx.showToast({
         title: '请选择购买数量',
@@ -523,23 +496,18 @@ Page({
       })
       return
     }
-    const isLogined = await AUTH.checkHasLogined()
-    if (!isLogined) {
-      return
-    }
+    // const isLogined = await AUTH.checkHasLogined()
+    // console.log("is logged: "+isLogined)
+    // if (!isLogined) {
+    //   return
+    // }
     const token = wx.getStorageSync('token')
+    console.log("token: "+token)
     const goodsId = this.data.goodsDetail.basicInfo.id
     const sku = []
-    if (this.data.goodsDetail.properties) {
-      this.data.goodsDetail.properties.forEach(p => {
-        sku.push({
-          optionId: p.id,
-          optionValueId: p.optionValueId
-        })
-      })
-    }
-    const res = await WXAPI.shippingCarInfoAddItem(token, goodsId, this.data.buyNumber, sku, goodsAddition)
-    if (res.code != 0) {
+ 
+    const res = await WXAPI.shippingCarInfoAddItem(goodsId, this.data.buyNumber)
+    if (!res.success) {
       wx.showToast({
         title: res.msg,
         icon: 'none'

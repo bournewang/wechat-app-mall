@@ -9,11 +9,7 @@ Page({
   selectTap: function(e) {
     console.log(e);
     var id = e.currentTarget.dataset.id;
-    WXAPI.updateAddress({
-      token: wx.getStorageSync('token'),
-      id: id,
-      isDefault: 'true'
-    }).then(function(res) {
+    WXAPI.selectAddress(id).then(function(res) {
       wx.navigateBack({})
     })
   },

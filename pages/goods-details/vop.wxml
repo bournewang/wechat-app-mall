@@ -298,7 +298,7 @@
     </view>
   </van-cell>
   <van-cell-group wx:if="{{ curAddressData }}" title="配送地址">
-    <van-cell title="{{curAddressData.linkMan}} {{curAddressData.mobile}}" label="{{curAddressData.address}}" value="更换"
+    <van-cell title="{{curAddressData.consignee}} {{curAddressData.telephone}}" label="{{curAddressData.address}}" value="更换"
       is-link bind:click="selectAddress" />
   </van-cell-group>
   <van-button wx:if="{{!curAddressData}}" bindtap="selectAddress" type="warning" block>添加收货地址</van-button>

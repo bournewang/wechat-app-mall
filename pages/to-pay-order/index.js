@@ -6,6 +6,7 @@ const wxpay = require('../../utils/pay.js')
 
 Page({
   data: {
+    cart: {},
     totalScoreToPay: 0,
     goodsList: [],
     isNeedLogistics: 0, // 是否需要物流信息
@@ -26,7 +27,7 @@ Page({
     pageIsEnd: false,
 
 
-    bindMobileStatus: 0, // 0 未判断 1 已绑定手机号码 2 未绑定手机号码
+    bindtelephoneStatus: 0, // 0 未判断 1 已绑定手机号码 2 未绑定手机号码
     userScore: 0, // 用户可用积分
     deductionScore: '0', // 本次交易抵扣的积分数
     shopCarType: 0 //0自营购物车，1云货架购物车
@@ -49,6 +50,20 @@ Page({
       this.data.code = code
     })
   },
+  async initShippingAddress() {
+    // const res = await WXAPI.defaultAddress(wx.getStorageSync('token'))
+    const res = await WXAPI.currentAddress()
+    if (res.code == 0) {
+      this.setData({
+        curAddressData: res.data
+      });
+    } else {
+      this.setData({
+        curAddressData: null
+      });
+    }
+    // this.processYunfei();
+  },
   async doneShow() {
     let goodsList = [];
     const token = wx.getStorageSync('token')
@@ -61,11 +76,12 @@ Page({
       }
     } else {
       //购物车下单
-      if (this.data.shopCarType == 0) {//自营购物车
+      // if (this.data.shopCarType == 0) {//自营购物车
         var res = await WXAPI.shippingCarInfo(token)
-      } else if (this.data.shopCarType == 1) {//云货架购物车
-        var res = await WXAPI.jdvopCartInfo(token)
-      }
+      // } else if (this.data.shopCarType == 1) {//云货架购物车
+        // var res = await WXAPI.jdvopCartInfo(token)
+      // }
+      this.setData({cart: res.data})
       if (res.code == 0) {
         goodsList = res.data.items.filter(ele => {
           return ele.selected
@@ -77,7 +93,7 @@ Page({
       peisongType: this.data.peisongType
     });
     this.initShippingAddress()
-    this.userAmount()
+    // this.userAmount()
   },
 
   onLoad(e) {
@@ -118,8 +134,10 @@ Page({
     this.data.remark = e.detail.value
   },
   async goCreateOrder() {
+    console.log("---- goCreateOrder")
     // 检测实名认证状态
-    if (wx.getStorageSync('needIdCheck') == 1) {
+    // if (wx.getStorageSync('needIdCheck') == 1) {
+     if (0) { 
       console.log(123);
 
       const res = await WXAPI.userDetail(wx.getStorageSync('token'))
@@ -150,40 +168,13 @@ Page({
   },
   createOrder: function (e) {
     var that = this;
-    var loginToken = wx.getStorageSync('token') // 用户登录 token
-    var remark = this.data.remark; // 备注信息
-
-    let postData = {
-      token: loginToken,
-      goodsJsonStr: that.data.goodsJsonStr,
-      remark: remark,
-      peisongType: that.data.peisongType,
-      deductionScore: this.data.deductionScore,
-      goodsType: this.data.shopCarType
-    };
-    if (that.data.kjId) {
-      postData.kjid = that.data.kjId
-    }
-    if (that.data.pingtuanOpenId) {
-      postData.pingtuanOpenId = that.data.pingtuanOpenId
-    }
-    if (postData.peisongType == 'kd' && that.data.curAddressData && that.data.curAddressData.provinceId) {
-      postData.provinceId = that.data.curAddressData.provinceId;
-    }
-    if (postData.peisongType == 'kd' && that.data.curAddressData && that.data.curAddressData.cityId) {
-      postData.cityId = that.data.curAddressData.cityId;
-    }
-    if (postData.peisongType == 'kd' && that.data.curAddressData && that.data.curAddressData.districtId) {
-      postData.districtId = that.data.curAddressData.districtId;
-    }
-    if (postData.peisongType == 'kd' && that.data.curAddressData && that.data.curAddressData.streetId) {
-      postData.streetId = that.data.curAddressData.streetId;
-    }
+    let postData = that.data.curAddressData
+    // postData.comment = this.data.remark
     if (this.data.shopCarType == 1) {
       // vop 需要地址来计算运费
-      postData.address = that.data.curAddressData.address;
-      postData.linkMan = that.data.curAddressData.linkMan;
-      postData.mobile = that.data.curAddressData.mobile;
+      postData.address = that.data.curAddressData.street;
+      postData.consignee = that.data.curAddressData.consignee;
+      postData.telephone = that.data.curAddressData.telephone;
       postData.code = that.data.curAddressData.code;
     }
     if (e && that.data.isNeedLogistics > 0 && postData.peisongType == 'kd') {
@@ -197,8 +188,8 @@ Page({
       }
       if (postData.peisongType == 'kd') {
         postData.address = that.data.curAddressData.address;
-        postData.linkMan = that.data.curAddressData.linkMan;
-        postData.mobile = that.data.curAddressData.mobile;
+        postData.consignee = that.data.curAddressData.consignee;
+        postData.telephone = that.data.curAddressData.telephone;
         postData.code = that.data.curAddressData.code;
       }
     }
@@ -224,7 +215,7 @@ Page({
           })
           return;
         }
-        if (!this.data.mobile) {
+        if (!this.data.telephone) {
           wx.showToast({
             title: '请填写联系电话',
             icon: 'none'
@@ -232,7 +223,7 @@ Page({
           return;
         }
         extJsonStr['联系人'] = this.data.name
-        extJsonStr['联系电话'] = this.data.mobile
+        extJsonStr['联系电话'] = this.data.telephone
       }
       if (postData.peisongType == 'zq' && this.data.shops) {
         postData.shopIdZt = this.data.shops[this.data.shopIndex].id
@@ -253,215 +244,102 @@ Page({
         return;
       }
 
-      if (e && "buyNow" != that.data.orderType) {
-        // 清空购物车数据
-        const keyArrays = []
-        that.data.goodsList.forEach(ele => {
-          keyArrays.push(ele.key)
-        })
-        if (that.data.shopCarType == 0) { //自营购物车
-          WXAPI.shippingCarInfoRemoveItem(loginToken, keyArrays.join())
-        } else if (that.data.shopCarType == 1) {//云货架购物车
-          WXAPI.jdvopCartRemove(loginToken, keyArrays.join())
-        }
-      }
-      if (!e) {
-        let hasNoCoupons = true
-        let coupons = null
-        if (res.data.couponUserList) {
-          hasNoCoupons = false
-          res.data.couponUserList.forEach(ele => {
-            let moneyUnit = '元'
-            if (ele.moneyType == 1) {
-              moneyUnit = '%'
-            }
-            if (ele.moneyHreshold) {
-              ele.nameExt = ele.name + ' [面值' + ele.money + moneyUnit + '，满' + ele.moneyHreshold + '元可用]'
-            } else {
-              ele.nameExt = ele.name + ' [面值' + ele.money + moneyUnit + ']'
-            }
-          })
-          coupons = res.data.couponUserList
-        }
-        // 计算积分抵扣规则 userScore
-        let scoreDeductionRules = res.data.scoreDeductionRules
-        if (scoreDeductionRules) {
-          // 如果可叠加，计算可抵扣的最大积分数
-          scoreDeductionRules.forEach(ele => {
-            if (ele.loop) {
-              let loopTimes = Math.floor(that.data.userScore / ele.score) // 按剩余积分取最大
-              let loopTimesMax = Math.floor((res.data.amountTotle + res.data.deductionMoney) / ele.money) // 按金额取最大
-              if (loopTimes > loopTimesMax) {
-                loopTimes = loopTimesMax
-              }
-              ele.score = ele.score * loopTimes
-              ele.money = ele.money * loopTimes
-            }
-          })
-          // 剔除积分数为0的情况
-          scoreDeductionRules = scoreDeductionRules.filter(ele => {
-            return ele.score > 0
-          })
-        }
+      wx.navigateTo({
+        url: "/pages/order-details/index?id="+res.data
+      })
 
-        that.setData({
-          totalScoreToPay: res.data.score,
-          isNeedLogistics: res.data.isNeedLogistics,
-          allGoodsAndYunPrice: res.data.amountReal,
-          yunPrice: res.data.amountLogistics,
-          hasNoCoupons,
-          coupons,
-          deductionMoney: res.data.deductionMoney,
-          couponAmount: res.data.couponAmount,
-          scoreDeductionRules
-        });
-        that.data.pageIsEnd = false
-        return;
-      }
-      that.processAfterCreateOrder(res)
+      // if (e && "buyNow" != that.data.orderType) {
+      //   // 清空购物车数据
+      //   const keyArrays = []
+      //   that.data.goodsList.forEach(ele => {
+      //     keyArrays.push(ele.key)
+      //   })
+      //   if (that.data.shopCarType == 0) { //自营购物车
+      //     WXAPI.shippingCarInfoRemoveItem(loginToken, keyArrays.join())
+      //   } else if (that.data.shopCarType == 1) {//云货架购物车
+      //     WXAPI.jdvopCartRemove(loginToken, keyArrays.join())
+      //   }
+      // }
+      // if (!e) {
+        // let hasNoCoupons = true
+        // let coupons = null
+        // if (res.data.couponUserList) {
+        //   hasNoCoupons = false
+        //   res.data.couponUserList.forEach(ele => {
+        //     let moneyUnit = '元'
+        //     if (ele.moneyType == 1) {
+        //       moneyUnit = '%'
+        //     }
+        //     if (ele.moneyHreshold) {
+        //       ele.nameExt = ele.name + ' [面值' + ele.money + moneyUnit + '，满' + ele.moneyHreshold + '元可用]'
+        //     } else {
+        //       ele.nameExt = ele.name + ' [面值' + ele.money + moneyUnit + ']'
+        //     }
+        //   })
+        //   coupons = res.data.couponUserList
+        // }
+        // 计算积分抵扣规则 userScore
+        // let scoreDeductionRules = res.data.scoreDeductionRules
+        // if (scoreDeductionRules) {
+        //   // 如果可叠加，计算可抵扣的最大积分数
+        //   scoreDeductionRules.forEach(ele => {
+        //     if (ele.loop) {
+        //       let loopTimes = Math.floor(that.data.userScore / ele.score) // 按剩余积分取最大
+        //       let loopTimesMax = Math.floor((res.data.amountTotle + res.data.deductionMoney) / ele.money) // 按金额取最大
+        //       if (loopTimes > loopTimesMax) {
+        //         loopTimes = loopTimesMax
+        //       }
+        //       ele.score = ele.score * loopTimes
+        //       ele.money = ele.money * loopTimes
+        //     }
+        //   })
+        //   // 剔除积分数为0的情况
+        //   scoreDeductionRules = scoreDeductionRules.filter(ele => {
+        //     return ele.score > 0
+        //   })
+        // }
+
+      //   that.setData({
+      //     totalScoreToPay: res.data.score,
+      //     isNeedLogistics: 1, //res.data.isNeedLogistics,
+      //     allGoodsAndYunPrice: res.data.amountReal,
+      //     yunPrice: res.data.amountLogistics,
+      //     hasNoCoupons,
+      //     coupons,
+      //     deductionMoney: res.data.deductionMoney,
+      //     couponAmount: res.data.couponAmount,
+      //     scoreDeductionRules
+      //   });
+      //   that.data.pageIsEnd = false
+      //   return;
+      // }
+      // that.processAfterCreateOrder(res.data)
     })
   },
-  async processAfterCreateOrder(res) {
+  async processAfterCreateOrder(data) {
     // 直接弹出支付，取消支付的话，去订单列表
-    const balance = this.data.balance
-    const userScore = this.data.userScore
-    if (userScore < res.data.score) {
-      wx.showModal({
-        title: '提示',
-        content: '您当前可用积分不足，请稍后前往订单管理进行支付',
-        showCancel: false,
-        success: res2 => {
-          wx.redirectTo({
-            url: "/pages/order-list/index"
-          })
-        }
-      })
-      return
-    }
-    if (balance || res.data.amountReal * 1 == 0) {
-      // 有余额
-      const money = (res.data.amountReal * 1 - balance * 1).toFixed(2)
-      if (money <= 0) {
-        // 余额足够
-        wx.showModal({
-          title: '请确认支付',
-          content: `您当前可用余额¥${balance}，使用余额支付¥${res.data.amountReal}？`,
-          confirmText: "确认支付",
-          cancelText: "暂不付款",
-          success: res2 => {
-            if (res2.confirm) {
-              // 使用余额支付
-              WXAPI.orderPay(wx.getStorageSync('token'), res.data.id).then(res3 => {
-                if (res3.code != 0) {
-                  wx.showToast({
-                    title: res3.msg,
-                    icon: 'none'
-                  })
-                  return
-                }
-                wx.redirectTo({
-                  url: "/pages/order-list/index"
-                })
-              })
-            } else {
-              wx.redirectTo({
-                url: "/pages/order-list/index"
-              })
-            }
-          }
-        })
-      } else {
-        // 余额不够
-        wx.showModal({
-          title: '请确认支付',
-          content: `您当前可用余额¥${balance}，仍需支付¥${money}`,
-          confirmText: "确认支付",
-          cancelText: "暂不付款",
-          success: res2 => {
-            if (res2.confirm) {
-              // 使用余额支付
-              wxpay.wxpay('order', money, res.data.id, "/pages/order-list/index");
-            } else {
-              wx.redirectTo({
-                url: "/pages/order-list/index"
-              })
-            }
-          }
-        })
-      }
-    } else {
+
+        // wx.showModal({
+        //   title: '请确认支付',
+        //   content: `您当前可用余额¥${balance}，仍需支付¥${data.orderAmount}`,
+        //   confirmText: "确认支付",
+        //   cancelText: "暂不付款",
+        //   success: res2 => {
+        //     if (res2.confirm) {
+        //       // 使用余额支付
+        //       wxpay.wxpay('order', data.orderAmount, data.id, "/pages/order-list/index");
+        //     } else {
+        //       wx.redirectTo({
+        //         url: "/pages/order-list/index"
+        //       })
+        //     }
+        //   }
+        // })
+      // }
+    // } else {
       // 没余额
-      wxpay.wxpay('order', res.data.amountReal, res.data.id, "/pages/order-list/index");
-    }
-  },
-  async initShippingAddress() {
-    const res = await WXAPI.defaultAddress(wx.getStorageSync('token'))
-    if (res.code == 0) {
-      this.setData({
-        curAddressData: res.data.info
-      });
-    } else {
-      this.setData({
-        curAddressData: null
-      });
-    }
-    this.processYunfei();
-  },
-  processYunfei() {
-    var goodsList = this.data.goodsList
-    if (goodsList.length == 0) {
-      return
-    }
-    const goodsJsonStr = []
-    var isNeedLogistics = 0;
-
-    let inviter_id = 0;
-    let inviter_id_storge = wx.getStorageSync('referrer');
-    if (inviter_id_storge) {
-      inviter_id = inviter_id_storge;
-    }
-    for (let i = 0; i < goodsList.length; i++) {
-      let carShopBean = goodsList[i];
-      if (carShopBean.logistics || carShopBean.logisticsId) {
-        isNeedLogistics = 1;
-      }
-
-      const _goodsJsonStr = {
-        propertyChildIds: carShopBean.propertyChildIds
-      }
-      if (carShopBean.sku && carShopBean.sku.length > 0) {
-        let propertyChildIds = ''
-        carShopBean.sku.forEach(option => {
-          propertyChildIds = propertyChildIds + ',' + option.optionId + ':' + option.optionValueId
-        })
-        _goodsJsonStr.propertyChildIds = propertyChildIds
-      }
-      if (carShopBean.additions && carShopBean.additions.length > 0) {
-        let goodsAdditionList = []
-        carShopBean.additions.forEach(option => {
-          goodsAdditionList.push({
-            pid: option.pid,
-            id: option.id
-          })
-        })
-        _goodsJsonStr.goodsAdditionList = goodsAdditionList
-      }
-      _goodsJsonStr.goodsId = carShopBean.goodsId
-      _goodsJsonStr.number = carShopBean.number
-      _goodsJsonStr.logisticsType = 0
-      _goodsJsonStr.inviter_id = inviter_id
-      goodsJsonStr.push(_goodsJsonStr)
-
-    }
-    if (this.data.shopCarType == 1) {
-      // vop 商品必须快递
-      isNeedLogistics = 1
-    }
-    this.setData({
-      isNeedLogistics: isNeedLogistics,
-      goodsJsonStr: JSON.stringify(goodsJsonStr)
-    });
-    this.createOrder();
+      wxpay.wxpay('order', data.orderAmount, data.id, "/pages/order-list/index");
+    // }
   },
   addAddress: function () {
     wx.navigateTo({
@@ -472,23 +350,6 @@ Page({
     wx.navigateTo({
       url: "/pages/select-address/index"
     })
-  },
-  bindChangeCoupon: function (e) {
-    const selIndex = e.detail.value;
-    this.setData({
-      curCoupon: this.data.coupons[selIndex],
-      curCouponShowText: this.data.coupons[selIndex].nameExt
-    });
-    this.processYunfei()
-  },
-  radioChange(e) {
-    this.setData({
-      peisongType: e.detail.value
-    })
-    this.processYunfei()
-    if (e.detail.value == 'zq') {
-      this.fetchShops()
-    }
   },
   cancelLogin() {
     wx.navigateBack()
@@ -525,7 +386,7 @@ Page({
       scale: 18
     })
   },
-  callMobile() {
+  calltelephone() {
     const shop = this.data.shops[this.data.shopIndex]
     wx.makePhoneCall({
       phoneNumber: shop.linkPhone,
@@ -535,8 +396,8 @@ Page({
     const res = await WXAPI.userDetail(wx.getStorageSync('token'))
     if (res.code == 0) {
       this.setData({
-        bindMobileStatus: res.data.base.mobile ? 1 : 2, // 账户绑定的手机号码状态
-        mobile: res.data.base.mobile,
+        bindtelephoneStatus: res.data.mobile ? 1 : 2, // 账户绑定的手机号码状态
+        telephone: res.data.mobile,
       })
     }
   },
@@ -548,18 +409,15 @@ Page({
       })
       return;
     }
-    const res = await WXAPI.bindMobileWxapp(wx.getStorageSync('token'), this.data.code, e.detail.encryptedData, e.detail.iv)
+    const res = await WXAPI.bindMobileWxapp(this.data.code, e.detail.encryptedData, e.detail.iv)
     AUTH.wxaCode().then(code => {
       this.data.code = code
     })
     if (res.code == 0) {
-      wx.showToast({
-        title: '读取成功',
-        icon: 'success'
-      })
+      wx.setStorageSync('userInfo', res.data)
       this.setData({
-        mobile: res.data,
-        bindMobileStatus: 1
+        bindtelephoneStatus: res.data.mobile ? 1 : 2, // 账户绑定的手机号码状态
+        telephone: res.data.mobile,
       })
     } else {
       wx.showToast({
@@ -567,20 +425,5 @@ Page({
         icon: 'none'
       })
     }
-  },
-  deductionScoreChange(event) {
-    this.setData({
-      deductionScore: event.detail,
-    })
-    this.processYunfei()
-  },
-  deductionScoreClick(event) {
-    const {
-      name
-    } = event.currentTarget.dataset;
-    this.setData({
-      deductionScore: name,
-    })
-    this.processYunfei()
-  },
+  }
 })

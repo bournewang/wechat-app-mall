@@ -1,6 +1,6 @@
 <van-field
-  wx:if="{{ mobile }}"
-  model:value="{{ mobile }}"
+  wx:if="{{ telephone }}"
+  model:value="{{ telephone }}"
   center
   readonly
   clearable
@@ -22,7 +22,7 @@
   <van-button slot="button" type="primary" size="small" open-type="getPhoneNumber" bind:getphonenumber="getPhoneNumber">立即绑定</van-button>
 </van-field>
 <van-field
-  wx:if="{{ mobile }}"
+  wx:if="{{ telephone }}"
   label="短信验证码"
   type="number"
   model:value="{{ code }}"
@@ -30,7 +30,7 @@
   clearable
 />
 <van-field
-  wx:if="{{ mobile }}"
+  wx:if="{{ telephone }}"
   label="交易密码"
   password
   model:value="{{ pwd }}"
@@ -38,7 +38,7 @@
   clearable
 />
 <van-field
-  wx:if="{{ mobile }}"
+  wx:if="{{ telephone }}"
   label="再次输入"
   password
   model:value="{{ pwd2 }}"

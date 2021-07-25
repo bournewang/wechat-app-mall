@@ -21,7 +21,7 @@ Page({
     }
     if (res.code == 0) {
       this.setData({
-        mobile: res.data.base.mobile
+        telephone: res.data.base.telephone
       })
     }
   },
@@ -63,7 +63,7 @@ Page({
     }
   },
   async submit() {
-    if (!this.data.mobile) {
+    if (!this.data.telephone) {
       wx.showToast({
         title: '请先绑定手机号码',
         icon: 'none'
@@ -98,7 +98,7 @@ Page({
       })
       return
     }
-    const res = await WXAPI.resetPayPassword(this.data.mobile, this.data.code, this.data.pwd)
+    const res = await WXAPI.resetPayPassword(this.data.telephone, this.data.code, this.data.pwd)
     if (res.code == 2000) {
       AUTH.login(this)
       return
@@ -128,7 +128,7 @@ Page({
       })
       return;
     }
-    WXAPI.bindMobileWxapp(wx.getStorageSync('token'), this.data.code, e.detail.encryptedData, e.detail.iv).then(res => {
+    WXAPI.bindtelephoneWxapp(wx.getStorageSync('token'), this.data.code, e.detail.encryptedData, e.detail.iv).then(res => {
       AUTH.wxaCode().then(code => {
         this.data.code = code
       })

@@ -11,7 +11,7 @@ Page({
     aIndex: 0,//选择的区下标
   },
   async provinces(provinceId, cityId, districtId, streetId) {
-    const res = await WXAPI.province()
+    const res = await WXAPI.provinces()
     if (res.code == 0) {
       const provinces = [{
         id: 0,
@@ -27,7 +27,7 @@ Page({
         pIndex,
         provinces: provinces
       })
-      if (provinceId) {
+      if (provinceId && provinceId != 'undefined') {
         const e = { detail: { value: pIndex}}
         this.provinceChange(e, cityId, districtId, streetId)
       }
@@ -39,6 +39,7 @@ Page({
       pIndex: index
     })
     const pid = this.data.provinces[index].id
+    console.log("province change: "+index +" pid: "+pid)
     if (pid == 0) {
       this.setData({
         cities: null,
@@ -48,7 +49,7 @@ Page({
       })
       return
     }
-    const res = await WXAPI.nextRegion(pid);
+    const res = await WXAPI.cities(pid);
     if (res.code == 0) {
       const cities = [{
         id: 0,
@@ -83,7 +84,7 @@ Page({
       })
       return
     }
-    const res = await WXAPI.nextRegion(pid);
+    const res = await WXAPI.districts(pid);
     if (res.code == 0) {
       const areas = [{
         id: 0,
@@ -123,6 +124,7 @@ Page({
       })
       return
     }
+    return
     const res = await WXAPI.nextRegion(pid);
     if (res.code == 0) {
       const streets = [{
@@ -174,19 +176,19 @@ Page({
       return
     }
     const shipping_address_region_level = wx.getStorageSync('shipping_address_region_level')
-    if (shipping_address_region_level == 4) {
-      if (this.data.sIndex == 0 ) {
-        wx.showToast({
-          title: '请选择社区/街道',
-          icon: 'none'
-        })
-        return
-      }
-    }
+    // if (shipping_address_region_level == 4) {
+    //   if (this.data.sIndex == 0 ) {
+    //     wx.showToast({
+    //       title: '请选择社区/街道',
+    //       icon: 'none'
+    //     })
+    //     return
+    //   }
+    // }
     
-    const linkMan = e.detail.value.linkMan;
+    const consignee = e.detail.value.consignee;
     const address = e.detail.value.address;
-    const mobile = e.detail.value.mobile;
+    const telephone = e.detail.value.telephone;
     if (this.data.shipping_address_gps == '1' && !this.data.addressData) {
       wx.showToast({
         title: '请选择定位',
@@ -196,14 +198,14 @@ Page({
     }
     const latitude = this.data.addressData ? this.data.addressData.latitude : null
     const longitude = this.data.addressData ? this.data.addressData.longitude : null
-    if (linkMan == ""){
+    if (consignee == ""){
       wx.showToast({
         title: '请填写联系人姓名',
         icon: 'none'
       })
       return
     }
-    if (mobile == ""){
+    if (telephone == ""){
       wx.showToast({
         title: '请填写手机号码',
         icon: 'none'
@@ -211,11 +213,11 @@ Page({
       return
     }
     const postData = {
-      token: wx.getStorageSync('token'),
-      linkMan: linkMan,
-      address: address,
-      mobile: mobile,
-      isDefault: 'true'
+      // token: wx.getStorageSync('token'),
+      consignee: consignee,
+      street: address,
+      telephone: telephone,
+      // isDefault: 'true'
     }
     if (this.data.shipping_address_gps == '1' && !latitude){
       wx.showToast({
@@ -239,13 +241,13 @@ Page({
     }    
     
     if (this.data.pIndex > 0) {
-      postData.provinceId = this.data.provinces[this.data.pIndex].id
+      postData.province_id = this.data.provinces[this.data.pIndex].id
     }
     if (this.data.cIndex > 0) {
-      postData.cityId = this.data.cities[this.data.cIndex].id
+      postData.city_id = this.data.cities[this.data.cIndex].id
     }
     if (this.data.aIndex > 0) {
-      postData.districtId = this.data.areas[this.data.aIndex].id
+      postData.district_id = this.data.areas[this.data.aIndex].id
     }    
     if (this.data.sIndex > 0) {
       postData.streetId = this.data.streets[this.data.sIndex].id
@@ -253,7 +255,7 @@ Page({
     let apiResult
     if (this.data.id) {
       postData.id = this.data.id
-      apiResult = await WXAPI.updateAddress(postData)
+      apiResult = await WXAPI.updateAddress(this.data.id, postData)
     } else {
       apiResult = await WXAPI.addAddress(postData)
     }
@@ -273,13 +275,13 @@ Page({
     // this.initFromClipboard('广州市天河区天河东路6号粤电广场北塔2302，徐小姐，18588998859')
     const _this = this
     if (e.id) { // 修改初始化数据库数据
-      const res = await WXAPI.addressDetail(wx.getStorageSync('token'), e.id)
+      const res = await WXAPI.addressDetail(e.id)
       if (res.code == 0) {
         this.setData({
           id: e.id,
-          addressData: res.data.info
+          addressData: res.data
         })
-        this.provinces(res.data.info.provinceId, res.data.info.cityId, res.data.info.districtId, res.data.info.streetId)
+        this.provinces(res.data.province_id, res.data.city_id, res.data.district_id, res.data.street_id)
       } else {
         wx.showModal({
           title: '错误',
@@ -304,7 +306,7 @@ Page({
   async initFromClipboard (str) {
     address_parse.smart(str).then(res => {
       console.log('ggggggg', res);
-      if (res.name && res.phone && res.address) {
+      if (res.name && res.phone && res.street) {
         
         // 检测到收货地址
         this.setData({
@@ -312,8 +314,8 @@ Page({
             provinceId: res.provinceCode,
             cityId: res.cityCode,
             districtId: res.countyCode,
-            linkMan: res.name,
-            mobile: res.phone,
+            consignee: res.name,
+            telephone: res.phone,
             address: res.address,
           }
         })
@@ -397,8 +399,8 @@ Page({
           })
         }
         const addressData = {}
-        addressData.linkMan = res.userName
-        addressData.mobile = res.telNumber
+        addressData.consignee = res.userName
+        addressData.telephone = res.telNumber
         addressData.address = res.detailInfo
         that.setData({
           addressData
@@ -410,7 +412,7 @@ Page({
     wx.chooseLocation({
       success: (res) => {
         const addressData = this.data.addressData ? this.data.addressData : {}
-        addressData.address = res.address + res.name
+        addressData.address = res.street + res.name
         addressData.latitude = res.latitude
         addressData.longitude = res.longitude
         this.setData({

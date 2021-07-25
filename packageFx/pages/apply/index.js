@@ -5,6 +5,7 @@ const wxpay = require('../../../utils/pay.js')
 Page({
   data: {
     wxlogin: true,
+    userInfo: {},
 
     applyStatus: -2, // -1 表示未申请，0 审核中 1 不通过 2 通过
     applyInfo: {},
@@ -22,31 +23,10 @@ Page({
   },
   async doneShow() {
     const _this = this
-    const userDetail = await WXAPI.userDetail(wx.getStorageSync('token'))
-    WXAPI.fxApplyProgress(wx.getStorageSync('token')).then(res => {
-      let applyStatus = userDetail.data.base.isSeller ? 2 : -1
-      if (res.code == 2000) {
-        this.setData({
-          wxlogin: false
-        })
-        return
-      }
-      if (res.code === 700) {
-        _this.setData({
-          applyStatus: applyStatus
-        })
-      }
-      if (res.code === 0) {
-        if (userDetail.data.base.isSeller) {
-          applyStatus = 2
-        } else {
-          applyStatus = res.data.status
-        }
-        _this.setData({
-          applyStatus: applyStatus,
-          applyInfo: res.data
-        })
-      }
+    // const userDetail = await WXAPI.userDetail(wx.getStorageSync('token'))
+    // this.data.userInfo = wx.getStorageSync('userInfo')
+    this.setData({
+      userInfo: wx.getStorageSync('userInfo')
     })
   },
   goForm: function (e) {

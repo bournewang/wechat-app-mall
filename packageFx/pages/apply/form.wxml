@@ -19,7 +19,7 @@
     </view>
     <view class="weui-cell">
       <view class="weui-cell__bd">
-        <input bindinput="nameChange" class="weui-input" placeholder="请输入真实姓名" />
+        <input bindchange="nameChange" value="{{name}}" class="weui-input" placeholder="请输入真实姓名" />
       </view>
     </view>
   </view>
@@ -31,7 +31,7 @@
     </view>
     <view class="weui-cell">
       <view class="weui-cell__bd">
-        <input bindinput="mobileChange" class="weui-input" placeholder="请输入手机号码" />
+        <input bindchange="mobileChange" value="{{mobile}}" class="weui-input" placeholder="请输入手机号码" />
       </view>
     </view>
   </view>

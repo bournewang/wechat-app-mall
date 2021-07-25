@@ -14,8 +14,8 @@
 
 <van-cell-group title="回收点">
   <van-cell title="回收方式" value="{{ orderInfo.logisticsType == 0 ? '自己货物送至回收点' : '快递至回收点' }}" />
-  <van-cell wx:if="{{shopInfodetail}}" title="联系人" value="{{shopInfodetail.info.linkMan}}" />
-  <van-cell wx:if="{{shopInfodetail}}" title="电话" value="{{shopInfodetail.info.linkPhone}}" is-link bind:click="callMobile" />
+  <van-cell wx:if="{{shopInfodetail}}" title="联系人" value="{{shopInfodetail.info.consignee}}" />
+  <van-cell wx:if="{{shopInfodetail}}" title="电话" value="{{shopInfodetail.info.linkPhone}}" is-link bind:click="calltelephone" />
   <van-cell wx:if="{{shopInfodetail}}" title="地址" title-width="64rpx" value="{{shopInfodetail.info.address}}" is-link bind:click="goMap" />
 </van-cell-group>
 

@@ -6,6 +6,7 @@ const app = getApp()
 
 Page({
   data: {
+    shippingCarInfo: {items: []},
     shopCarType: 0, //0自营 1云货架
     saveHidden: true,
     allSelect: true,
@@ -43,24 +44,25 @@ Page({
     this.shippingCarInfo()
   },
   async shippingCarInfo() {
-    const token = wx.getStorageSync('token')
-    if (!token) {
-      return
-    }
-    if (this.data.shopCarType == 0) { //自营购物车
-      var res = await WXAPI.shippingCarInfo(token)
-    } else if (this.data.shopCarType == 1) { //云货架购物车
-      var res = await WXAPI.jdvopCartInfo(token)
-    }
+    // const token = wx.getStorageSync('token')
+    // if (!token) {
+    //   return
+    // }
+    // if (this.data.shopCarType == 0) { //自营购物车
+      var res = await WXAPI.shippingCarInfo()
+      console.log("shippingCarInfo ----")
+    // } else if (this.data.shopCarType == 1) { //云货架购物车
+    //   var res = await WXAPI.jdvopCartInfo(token)
+    // }
     if (res.code == 0) {
-      if (this.data.shopCarType == 0) //自营商品
-      {
-        res.data.items.forEach(ele => {
-          if (!ele.stores || ele.status == 1) {
-            ele.selected = false
-          }
-        })
-      }
+      // if (this.data.shopCarType == 0) //自营商品
+      // {
+      //   res.data.items.forEach(ele => {
+      //     if (!ele.stores || ele.status == 1) {
+      //       ele.selected = false
+      //     }
+      //   })
+      // }
       this.setData({
         shippingCarInfo: res.data
       })
@@ -142,44 +144,29 @@ Page({
     }
   },
   async jiaBtnTap(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.shippingCarInfo.items[index]
-    const number = item.number + 1
-    const token = wx.getStorageSync('token')
-    if(this.data.shopCarType == 0){
-      var res = await WXAPI.shippingCarInfoModifyNumber(token, item.key, number)
+    console.log("------ jia btn tap")
+    const goods_id = e.currentTarget.dataset.goods_id;
+    const number = parseInt(e.currentTarget.dataset.quantity);
+    // const number = item.number + 1
+    var res = await WXAPI.shippingCarInfoModifyNumber(goods_id, number+1)
+    // this.shippingCarInfo()
+    if (res.success) {
+      this.setData({
+        shippingCarInfo: res.data
+      })
     }
-    else if(this.data.shopCarType == 1){
-      var res = await WXAPI.jdvopCartModifyNumber(token, item.key, number)
-    }    
-    this.shippingCarInfo()
   },
   async jianBtnTap(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.shippingCarInfo.items[index]
-    const number = item.number - 1
-    if (number <= 0) {
-      // 弹出删除确认
-      wx.showModal({
-        content: '确定要删除该商品吗？',
-        success: (res) => {
-          if (res.confirm) {
-            this.delItemDone(item.key)
-          }
-        }
+    const goods_id = e.currentTarget.dataset.goods_id;
+    const number = parseInt(e.currentTarget.dataset.quantity);
+    // const number = item.number + 1
+    var res = await WXAPI.shippingCarInfoModifyNumber(goods_id, number > 0 ? (number-1) : number)
+    // this.shippingCarInfo()
+    if (res.success) {
+      this.setData({
+        shippingCarInfo: res.data
       })
-      return
     }
-    const token = wx.getStorageSync('token')
-    if(this.data.shopCarType == 0)
-    {
-      var res = await WXAPI.shippingCarInfoModifyNumber(token, item.key, number)  
-    }
-    if(this.data.shopCarType == 1)
-    {
-      var res = await WXAPI.jdvopCartModifyNumber(token, item.key, number)  
-    }
-    this.shippingCarInfo()
   },
   changeCarNumber(e) {
     const key = e.currentTarget.dataset.key
